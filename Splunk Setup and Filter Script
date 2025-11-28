@@ -1,0 +1,53 @@
+
+🔎 Splunk SIEM Setup
+Install + Enable Receiver
+sudo /opt/splunk/bin/splunk enable listen 9997
+sudo ufw allow 9997
+
+📨 Splunk Universal Forwarder Setup
+Connect to Splunk Server
+cd "C:\Program Files\SplunkUniversalForwarder\bin"
+splunk.exe add forward-server <SPLUNK_PRIVATE_IP>:9997
+splunk.exe restart
+
+Log Sources Enabled
+
+Security Log
+
+System Log
+
+Application Log
+
+PowerShell
+
+Sysmon Operational
+
+🛡 Detection Use Cases
+1️⃣ Failed Logins
+index="myproject-ad" EventCode=4625
+| stats count by Account_Name, Workstation_Name, Failure_Reason
+
+2️⃣ RDP Brute Force
+index="myproject-ad" EventCode=4625 Logon_Type=10
+| stats count by Source_Network_Address, Account_Name
+| where count > 5
+
+3️⃣ PowerShell Attack Detection
+index="myproject-ad" SourceName="Microsoft-Windows-PowerShell"
+| stats count by User, CommandLine
+
+4️⃣ Suspicious Processes (Sysmon EID 1)
+index="myproject-ad" EventCode=1
+| table _time, User, Image, CommandLine, ParentImage
+
+5️⃣ Account Creation Events (EID 4720)
+index="myproject-ad" EventCode=4720
+| table _time, TargetUserName, SubjectUserName
+
+6️⃣ File Access (Sysmon EID 11)
+index="myproject-ad" EventCode=11
+| stats count by TargetFilename, User
+
+7️⃣ Network Connections (Sysmon EID 3)
+index="myproject-ad" EventCode=3
+| table _time, Image, SourceIp, DestinationIp, DestinationPort
